@@ -1,0 +1,62 @@
+h1 {
+    font-size: 4.5em;
+}
+
+h1 a {
+    color: black;
+    text-decoration: none;
+}
+
+form {
+    margin-bottom: 0px;
+}
+
+.main{
+    width: 500px;
+}
+
+.intro {
+    font-style: italic;
+    padding: 0 0 5px 0 
+}
+
+.input {
+    padding: 6px;
+    margin: 10px 0 10px 0;
+    font-size: 3em;
+}
+
+.resultaatFout {
+    color: red;
+}
+
+.resultaatGoed {
+    color:green;
+}
+
+.button {
+    border-color: blue;
+    border-radius: 1em;
+    width: 150px;
+    padding: 5px;
+    float: right;
+    outline:none;
+}
+
+label{
+    font-weight: bold;
+    display: block;
+}
+
+.sectie {
+    border-style: solid  red 1px;
+    padding-bottom: 15px;
+}
+
+.warning{
+    border-style: solid  red 1px;
+}
+
+.hidden {
+    display:none;
+}

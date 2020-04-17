@@ -1,0 +1,235 @@
+<html>
+
+<head>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script>
+
+        function validateForm() {
+            // Get the input
+            let invoer = $.trim($('#invoer').val().toLowerCase());
+
+            // Get the answer
+            let antwoord = $('#antwoord').val();
+
+            // Create some empty variables
+            let message = '';
+            let className = 'resultaatFout';
+
+            // Check if there is any answer
+            if (invoer == "") {
+                message = 'Je hebt nog geen antwoord gegeven!';
+            } else {
+                // Check if the answer is correct
+                if (invoer === antwoord || invoer === 'test') { // Debug purpose
+                    // Set correct question message and class
+
+                    className = 'resultaatGoed';
+
+                    // Add +1 for the questions we have answerd
+                    saveCorrectAmountOfQuestions();
+
+                    // Keep track on how many questions here are beeing answerd correctly
+                    saveAmountOfQuestions();
+
+                    // Check if we are done with the test
+                    message = checkWhatToShowNext();
+                } else {
+                    // Set wrong question message and class
+                    message = 'Helaas probeer het nog eens';
+
+                    // Keep track on how many questions here are beeing answerd wrongly
+                    saveWrongAmountOfQuestions();
+                }
+            }
+
+            // Set the correct message and class
+            $('#result').html(message);
+            $('#result').attr('class', className);
+
+            return false;
+        }
+
+        function saveAmountOfQuestions() {
+            localStorage.setItem('totaalBeantwoord', parseInt(localStorage.getItem('totaalBeantwoord')) + 1);
+        }
+
+        function saveCorrectAmountOfQuestions() {
+            localStorage.setItem('totaalGoed', parseInt(localStorage.getItem('totaalGoed')) + 1);
+        }
+
+        function saveWrongAmountOfQuestions() {
+            localStorage.setItem('totaalFout', parseInt(localStorage.getItem('totaalFout')) + 1);
+        }
+
+        function checkWhatToShowNext() {
+            if (parseInt(localStorage.getItem('totaalBeantwoord')) === parseInt(localStorage.getItem('amountOfQuestions'))) {
+                // Hide the buttons to interact with the form
+                document.getElementById('controleren').style.display = 'none';
+                document.getElementById('volgende').style.display = 'none';
+
+                // Show the button to go to the main page
+                document.getElementById('klaar').style.display = 'block';
+
+                return 'Goede gedaan ' + localStorage.getItem('firstname') + ' je bent klaar voor vandaag!';
+            } else {
+                // Hide the controleren button
+                document.getElementById('controleren').style.display = 'none';
+
+                // Show the next button
+                document.getElementById('volgende').style.display = 'block';
+
+                return 'Goede gedaan ' + localStorage.getItem('firstname') + ' op naar de volgende vraag!';
+            }
+        }
+
+        function onInit() {
+            // Set default values
+            setDefaultValues();
+
+            // Set the audio file
+            setAudioInformation();
+        }
+
+        function setDefaultValues() {
+            if (localStorage.getItem('totaalGoed') === null) {
+                localStorage.setItem('totaalGoed', 0);
+            }
+
+            if (localStorage.getItem('totaalFout') === null) {
+                localStorage.setItem('totaalFout', 0);
+            }
+
+            if (localStorage.getItem('totaalBeantwoord') === null) {
+                localStorage.setItem('totaalBeantwoord', 0);
+            }
+
+            // Hide by default the next button
+            document.getElementById('volgende').style.display = 'none';
+            document.getElementById('klaar').style.display = 'none';
+        }
+
+        function setAudioInformation() {
+            // Create an array with all audio files
+            const questionsPlank = [
+                { audio: 'alstublieft.m4a' },
+                { audio: 'bijvoorbeeld.m4a' },
+                { audio: 'inleiden.m4a' }
+            ]
+
+            const questionsZing = [
+                { audio: 'waardering.m4a' },
+                { audio: 'veering.m4a' },
+                { audio: 'bewondering.m4a' }
+            ]
+
+            const questionsHak = [
+                { audio: 'boter.m4a' },
+                { audio: 'water.m4a' },
+                { audio: 'haring.m4a' }
+            ]
+
+            var spellingsVragen = [
+                [
+                    "zing",
+                    { audio: 'alstublieft.m4a', antwoord: 'alstublieft' },
+                    { audio: 'bijvoorbeeld.m4a', antwoord: 'bijvoorbeeld' },
+                    { audio: 'inleiden.m4a', antwoord: 'inleiden' }
+                ],
+                [
+                    "plank",
+                    { audio: 'alstublieft.m4a', antwoord: 'alstublieft' },
+                    { audio: 'bijvoorbeeld.m4a', antwoord: 'bijvoorbeeld' },
+                    { audio: 'inleiden.m4a', antwoord: 'inleiden' }
+                ],
+                [
+                    "hak",
+                    { audio: 'alstublieft.m4a', antwoord: 'alstublieft' },
+                    { audio: 'bijvoorbeeld.m4a', antwoord: 'bijvoorbeeld' },
+                    { audio: 'inleiden.m4a', antwoord: 'inleiden' }
+                ]
+            ];
+
+            let cat = localStorage.getItem('categorie');
+
+            // Calculate how many questions per category
+            let amountOfQuestions = localStorage.getItem('amountOfQuestions');
+            let amountOfCategories = cat.split(',').length;
+
+            // console.log(amountOfQuestions);
+            // console.log(amountOfCategories);
+
+            let amountPerCat = parseInt(amountOfQuestions / amountOfCategories);
+            let restValue = amountOfQuestions % amountOfCategories;
+            // console.log(amountPerCat);
+            // console.log(restValue);
+
+
+            let questions = [];
+            $(spellingsVragen).each(function () {
+                let value = $(this)[0];
+                if (cat.includes(value)) {
+                    for (let x = 0; x < amountPerCat; x++) {
+                        console.log($(this));
+                        let randomQuestion = getRandomCategorieQuestion($(this));
+                        questions.push(randomQuestion);
+                    }
+                }
+            });
+
+            console.log(questions);
+
+
+            // console.log(randomNumber);
+
+            // console.log(spellingsVragen);
+
+            // Pick a random question
+            const randomVraag = spellingsVragen[Math.floor(Math.random() * spellingsVragen.length)];
+
+            // Debug purpose
+            // console.log('random spellingsVragen =>', randomVraag);
+
+            // Set the audio file and answer in the form
+            let antwoord = randomVraag.audio;
+            document.getElementById('antwoord').value = antwoord;
+            // console.log('antwoord' + antwoord);
+            document.getElementById('audioBestand').src = './Audio/' + randomVraag.audio;
+        }
+
+        function getRandomCategorieQuestion(arr) {
+            let random1 = Math.floor((Math.random() * (arr.length)));
+            return arr[random1][Math.floor((Math.random() * (arr[random1].length)))];
+        }
+    </script>
+</head>
+
+<body onload="onInit();">
+    <h1><a href="index.html">Spelling oefenen</a></h1>
+    <div class="intro">Luister maar het fragment</div>
+
+    <div class="main">
+        <div class="sectie">
+            <iframe src="silence.mp3" allow="autoplay" id="audio" style="display:none"></iframe>
+            <audio id="audioBestand" type="audio/x-m4a" controls autoplay="autoplay">
+                <code> Your browser doesn't support audio tags</code>
+            </audio>
+        </div>
+
+        <div class="sectie">
+            <form name="myForm" action="oefenen.html" onsubmit="return validateForm()" method="post">
+                <input type="hidden" id="antwoord">
+                <label>Type hier je antwoord</label>
+                <div><input class="input" type="text" id="invoer"></div>
+                <div><button class="button" type="submit" id="controleren">controleren</button></div>
+            </form>
+
+            <div><button class="button hidden" onclick="location.reload();" id="volgende">volgende</button></div>
+            <div><button class="button hidden" onclick="location.href='index.html';" id="klaar">klaar!</button></div>
+        </div>
+
+        <div class="result" id="result"></div>
+    </div>
+</body>
+
+</html>

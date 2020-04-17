@@ -1,0 +1,128 @@
+<html>
+
+<head>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script>
+        function onInit() {
+            // If firstname is not stored ask for the firstname
+            setFirstName();
+
+            // Fill in all the stored values
+            fillFirstName();
+            setCategories();
+            setAmountOfQuestions();
+            setStatistics();
+
+            // Always reset the total answerd questions
+            localStorage.setItem('totaalBeantwoord', 0);
+        }
+
+        function setFirstName() {
+            let firstname = localStorage.getItem('firstname');
+
+            if (firstname === null || firstname === "") {
+                let firstname = prompt('Hoe heet je?', "Harry Potter?");
+                localStorage.setItem('firstname', firstname);
+            }
+        }
+
+        function fillFirstName() {
+            let firstname = localStorage.getItem('firstname');
+
+            $('#firstname').val(firstname);
+        }
+
+        function setCategories() {
+            let selectedCategorieList = localStorage.getItem('categorie');
+
+            $("input:checkbox").each(function () {
+                if (selectedCategorieList.includes($(this).val())) {
+                    $(this).prop("checked", true);
+                }
+            });
+        }
+
+        function setAmountOfQuestions() {
+            let selectedAmountOfQuestion = localStorage.getItem('amountOfQuestions');
+
+            $("select").val(selectedAmountOfQuestion);
+        }
+
+        function setStatistics() {
+            $('#totaalGoed').html(localStorage.getItem('totaalGoed'));
+            $('#totaalFout').html(localStorage.getItem('totaalFout'));
+        }
+
+        function validateForm() {
+            // Save the values in the storage
+            if (!$('#firstname').val()) {
+                $('#firstname').css("border", "5px solid red");
+                return false;
+            }
+
+            localStorage.setItem('firstname', $.trim($('#firstname').val()));
+            localStorage.setItem('amountOfQuestions', $('#amountOfQuestions').val());
+
+            let category = getCheckedCheckboxesFor('categorie');
+            localStorage.setItem('categorie', category);
+        }
+
+        function getCheckedCheckboxesFor(checkboxName) {
+            var values = [];
+
+            let checkboxes = $.each($('input[id="' + checkboxName + '"]:checked'), function () {
+                console.log('push');
+                values.push($(this).val());
+            });
+
+            return values;
+        }
+    </script>
+</head>
+
+<body onload="onInit();">
+    <h1>Welkom bij spelling oefenen</h1>
+    <div class="intro">Hieronder kan je aangeven wat je wilt oefenen</div>
+
+    <div class="main">
+        <form name="myForm" action="oefenen.html" onsubmit="return validateForm()" method="post">
+            <div class="sectie">
+                <label>Je naam</label>
+                <input class="intro" type="text" id="firstname">
+            </div>
+
+            <div class="sectie">
+                <label>Categorie</label>
+                Zing woord <input type="checkbox" value="zing" id="categorie"><br />
+                Plank woord <input type="checkbox" value="plank" id="categorie"><br />
+                Hak woord <input type="checkbox" value="hak" id="categorie"><br />
+            </div>
+
+            <div class=" sectie">
+                <label>Aantal te oefenen</label>
+                <select id="amountOfQuestions">
+                    <option value="5">5</option>
+                    <option value="10" selected="selected">10</option>
+                    <option value="15">15</option>
+                    <option value="20">20</option>
+                    <option value="25">25</option>
+                    <option value="30">30</option>
+                </select>
+            </div>
+
+            <div class="sectie">
+                <button class="button" type="submit" id="controleren">Oefenen maar!</button>
+            </div>
+        </form>
+
+        <div id="history">
+            <label>Goed beantwoord</label>
+            <div class="total" id="totaalGoed"></div>
+            <label>Fout beantwoord</label>
+            <div class="total" id="totaalFout"></div>
+        </div>
+    </div>
+</body>
+
+</html>
