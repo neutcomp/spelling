@@ -1,0 +1,8 @@
+{
+    "name": "spelling-app",
+    "version": "1.0",
+    "description": "The spelling package file",
+    "scripts": {
+        "spelling:prod": "git ftp init"
+    }
+}
