@@ -113,8 +113,8 @@
             // Data allready loaded so just pick the answer from the stored array
             if (localStorage.getItem('questionsToAsk')) {
                 let questionsArray = localStorage.getItem('questionsToAsk').split(',');
-                let antwoordVraag = questionsArray[localStorage.getItem('totaalBeantwoord')];
-                console.log('het antwoord: ' + antwoordVraag);
+                let antwoord = questionsArray[localStorage.getItem('totaalBeantwoord')];
+                console.log('het antwoord: ' + antwoord);
                 fillAnswer(antwoord);
                 return false;
             }
