@@ -165,7 +165,7 @@
                 }
             };
 
-            // console.log('Questions to ask: ' + questions);
+            console.log('Questions to ask: ' + questions);
 
             if (restValue > 0) {
                 // Pick a random categorie
@@ -178,15 +178,15 @@
                     // Pick a random question
                     questions.push(getRandomCategorieQuestion(eval(questionArrayName)));
                 }
-
-                // console.log('Questions to ask: ' + questions);
-                localStorage.setItem('questionsToAsk', questions);
-
-                // Set the audio file and answer in the form
-                let antwoord = questions[localStorage.getItem('totaalBeantwoord')];
-
-                fillAnswer(antwoord);
             }
+
+            // console.log('Questions to ask: ' + questions);
+            localStorage.setItem('questionsToAsk', questions);
+
+            // Set the audio file and answer in the form
+            let antwoord = questions[localStorage.getItem('totaalBeantwoord')];
+
+            fillAnswer(antwoord);
         }
 
         function fillAnswer(antwoord) {
