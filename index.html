@@ -5,9 +5,6 @@
     <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
     <script>
         function onInit() {
-            // If firstname is not stored ask for the firstname
-            setFirstName();
-
             // Fill in all the stored values
             fillFirstName();
             setCategories();
@@ -16,15 +13,6 @@
 
             // Always reset the total answerd questions
             localStorage.setItem('totaalBeantwoord', 0);
-        }
-
-        function setFirstName() {
-            let firstname = localStorage.getItem('firstname');
-
-            if (firstname === null || firstname === "") {
-                let firstname = prompt('Hoe heet je?', "Harry Potter?");
-                localStorage.setItem('firstname', firstname);
-            }
         }
 
         function fillFirstName() {
@@ -37,7 +25,7 @@
             let selectedCategorieList = localStorage.getItem('categorie');
 
             $("input:checkbox").each(function () {
-                if (selectedCategorieList.includes($(this).val())) {
+                if (selectedCategorieList && selectedCategorieList.includes($(this).val())) {
                     $(this).prop("checked", true);
                 }
             });
@@ -46,7 +34,11 @@
         function setAmountOfQuestions() {
             let selectedAmountOfQuestion = localStorage.getItem('amountOfQuestions');
 
-            $("select").val(selectedAmountOfQuestion);
+            if (selectedAmountOfQuestion) {
+                $("select").val(selectedAmountOfQuestion);
+            } else {
+                $("select").val("10");
+            }
         }
 
         function setStatistics() {
@@ -57,7 +49,7 @@
         function validateForm() {
             // Save the values in the storage
             if (!$('#firstname').val()) {
-                $('#firstname').css("border", "5px solid red");
+                $('#result').html('Je naam is niet ingevuld');
                 return false;
             }
 
@@ -65,6 +57,12 @@
             localStorage.setItem('amountOfQuestions', $('#amountOfQuestions').val());
 
             let category = getCheckedCheckboxesFor('categorie');
+
+            if (Array.isArray(category) && (category.length === 0)) {
+                $('#result').html('Je hebt geen categorie geselecteerd');
+                return false;
+            }
+
             localStorage.setItem('categorie', category);
         }
 
@@ -82,25 +80,27 @@
 </head>
 
 <body onload="onInit();">
-    <h1>Welkom bij spelling oefenen</h1>
-    <div class="intro">Hieronder kan je aangeven wat je wilt oefenen</div>
-
     <div class="main">
+        <div class="intro">
+            <h1>Welkom bij spelling oefenen</h1>
+            <div class="intro">Hieronder kan je aangeven wat je wilt oefenen</div>
+        </div>
+
         <form name="myForm" action="oefenen.html" onsubmit="return validateForm()" method="post">
             <div class="sectie">
-                <label>Je naam</label>
-                <input class="intro" type="text" id="firstname">
+                <label data-cy="je-naam">Je naam</label>
+                <input class="intro" type="text" id="firstname" data-cy="voornaam">
             </div>
 
             <div class="sectie">
-                <label>Categorie</label>
-                Zing woord <input type="checkbox" value="zing" id="categorie"><br />
-                Plank woord <input type="checkbox" value="plank" id="categorie"><br />
-                Hak woord <input type="checkbox" value="hak" id="categorie"><br />
+                <label data-cy="categorie">Categorie</label>
+                Zing woord <input type="checkbox" value="zing" id="categorie" name="categorie"><br />
+                Plank woord <input type="checkbox" value="plank" id="categorie" name="categorie"><br />
+                Hak woord <input type="checkbox" value="hak" id="categorie" name="categorie"><br />
             </div>
 
             <div class=" sectie">
-                <label>Aantal te oefenen</label>
+                <label data-cy="aantal-vragen">Aantal te oefenen</label>
                 <select id="amountOfQuestions">
                     <option value="5">5</option>
                     <option value="10" selected="selected">10</option>
@@ -112,11 +112,14 @@
             </div>
 
             <div class="sectie">
-                <button class="button" type="submit" id="controleren">Oefenen maar!</button>
+                <button class="button" type="submit" data-cy="start" id="controleren">Oefenen maar!</button>
             </div>
         </form>
 
-        <div id="history">
+        <div class="warning resultaatFout" id="result" data-cy="validation-message"></div>
+
+        <div class="sectie">
+            <h2>Statistieken</h2>
             <label>Goed beantwoord</label>
             <div class="total" id="totaalGoed"></div>
             <label>Fout beantwoord</label>

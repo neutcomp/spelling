@@ -1,8 +1,19 @@
 {
     "name": "spelling-app",
-    "version": "1.0",
+    "version": "1.0.2",
     "description": "The spelling package file",
     "scripts": {
-        "spelling:prod": "git ftp init"
+        "start": "http-server . -p 8000 -c-1 --silent",
+        "test": "cypress run --config 'baseUrl=http://127.0.0.1:8000'",
+        "precommit": "start-server-and-test 8000",
+        "spelling:prod": "git ftp init",
+        "cypress:open": "cypress open"
+    },
+    "devDependencies": {
+        "husky": "^4.2.5",
+        "start-server-and-test": "^1.11.0"
+    },
+    "dependencies": {
+        "cypress": "^4.4.0"
     }
 }
