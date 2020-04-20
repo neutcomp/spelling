@@ -214,10 +214,11 @@
             return array;
         }
 
-        function fillAnswer(antwoord) {
-            // console.log('antwoord' + antwoord);
+        function fillAnswer(audioInfo) {
+            let antwoord = audioInfo.split('/')[1];
+            // console.log('antwoord: ' + antwoord);
             document.getElementById('antwoord').value = antwoord;
-            document.getElementById('audioBestand').src = './Audio/' + antwoord + '.m4a';
+            document.getElementById('audioBestand').src = './Audio/' + audioInfo + '.m4a';
         }
 
         function getArrayName(categorieName) {
