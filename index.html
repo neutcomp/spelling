@@ -1,6 +1,9 @@
 <html>
 
 <head>
+    <title>Spelling oefenen</title>
+    <description>Op spelling oefenen kunnen kinderen de spelling aan de hand van audiobestanden leren schrijven
+    </description>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
         integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
@@ -19,8 +22,6 @@
 
     <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
     <script>
-        var fs = require('fs');
-
         function onInit() {
             // Fill in all the stored values
             fillFirstName();
@@ -31,9 +32,6 @@
             // Always reset the total answerd questions
             localStorage.setItem('totaalBeantwoord', 0);
             localStorage.setItem('questionsToAsk', '');
-
-            var text = fs.readFileSync("./import.txt", "utf-8");
-            console.log(text);
         }
 
         function fillFirstName() {

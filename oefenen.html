@@ -115,13 +115,14 @@
             if (localStorage.getItem('questionsToAsk')) {
                 let questionsArray = localStorage.getItem('questionsToAsk').split(',');
                 let antwoord = questionsArray[localStorage.getItem('totaalBeantwoord')];
-                console.log('het antwoord: ' + antwoord);
+                // console.log('het antwoord: ' + antwoord);
                 fillAnswer(antwoord);
                 return false;
             }
 
             // Create an array with all audio files
             const questionsPlank = [
+                'Plank/bedanken', 'Plank/anker', 'Plank/ankers', 'Plank/bank', 'Plank/banken', 'Plank/bedankt', 'Plank/bink', 'Plank/bonk', 'Plank/bonken', 'Plank/bonkt', 'Plank/dank', 'Plank/dankbaar', 'Plank/danken', 'Plank/denk', 'Plank/denken', 'Plank/donker', 'Plank/donkere', 'Plank/drink', 'Plank/drinken', 'Plank/drinkt', 'Plank/enkel', 'Plank/enkele', 'Plank/enkelvoud', 'Plank/enkhuizen', 'Plank/flink', 'Plank/flinke', 'Plank/frankrijk', 'Plank/hinken', 'Plank/hinkt', 'Plank/jonkvrouw', 'Plank/klank', 'Plank/klanken', 'Plank/klink', 'Plank/klinkt', 'Plank/linksaf', 'Plank/medeklinker', 'Plank/ondanks', 'Plank/pink', 'Plank/pinken', 'Plank/plank', 'Plank/planken', 'Plank/plankton', 'Plank/schenk', 'Plank/schenken', 'Plank/sprinkhaan', 'Plank/stank', 'Plank/stinken', 'Plank/stinkt', 'Plank/stonk', 'Plank/stonken', 'Plank/vink', 'Plank/vinken', 'Plank/vinkeveen', 'Plank/vonk', 'Plank/vonken', 'Plank/wankelen', 'Plank/winkel', 'Plank/winkelier', 'Plank/zwenken'
             ]
 
             const questionsZing = [
@@ -132,11 +133,11 @@
                 'Hak/films', 'Hak/arts', 'Hak/balts', 'Hak/erts', 'Hak/fronst', 'Hak/grenst', 'Hak/kilts', 'Hak/kletst', 'Hak/korps', 'Hak/krimpt', 'Hak/kwarts', 'Hak/nerts', 'Hak/plaats', 'Hak/plenst', 'Hak/plonst', 'Hak/pumps', 'Hak/schalks', 'Hak/scherps', 'Hak/snurkt', 'Hak/splits', 'Hak/sponst', 'Hak/spraak', 'Hak/sprak', 'Hak/spreek', 'Hak/spreekt', 'Hak/spreuk', 'Hak/sprint', 'Hak/sprits', 'Hak/stampt', 'Hak/stompt', 'Hak/straal', 'Hak/straalt', 'Hak/straf', 'Hak/straft', 'Hak/strak', 'Hak/straks', 'Hak/streek', 'Hak/streep', 'Hak/streept', 'Hak/strek', 'Hak/strekt', 'Hak/striem', 'Hak/strijk', 'Hak/strijkt', 'Hak/strik', 'Hak/strikt', 'Hak/strip', 'Hak/stroef', 'Hak/strook', 'Hak/stroom', 'Hak/stroomt', 'Hak/stroop', 'Hak/strop', 'Hak/struik', 'Hak/terts', 'Hak/tjilpt', 'Hak/zelfs', 'Hak/zwerft', 'Hak/zwermt'
             ]
 
-            const questionHakSpeciaal = [
+            const questionsHakSpeciaal = [
                 'Hakspeciaal/berg', 'HakSpeciaal/arm', 'HakSpeciaal/balk', 'HakSpeciaal/belg', 'HakSpeciaal/berk', 'HakSpeciaal/berm', 'HakSpeciaal/darm', 'HakSpeciaal/dorp', 'HakSpeciaal/durf', 'HakSpeciaal/dwerg', 'HakSpeciaal/erg', 'HakSpeciaal/film', 'HakSpeciaal/golf', 'HakSpeciaal/half', 'HakSpeciaal/hark', 'HakSpeciaal/harp', 'HakSpeciaal/helm', 'HakSpeciaal/help', 'HakSpeciaal/hoorn', 'HakSpeciaal/hulp', 'HakSpeciaal/hurk', 'HakSpeciaal/jurk', 'HakSpeciaal/kalf', 'HakSpeciaal/kalm', 'HakSpeciaal/kerk', 'HakSpeciaal/kern', 'HakSpeciaal/kolk', 'HakSpeciaal/kurk', 'HakSpeciaal/larf', 'HakSpeciaal/melk', 'HakSpeciaal/merk', 'HakSpeciaal/norm', 'HakSpeciaal/palm', 'HakSpeciaal/park', 'HakSpeciaal/perk', 'HakSpeciaal/schelp', 'HakSpeciaal/scherf', 'HakSpeciaal/scherm', 'HakSpeciaal/scherp', 'HakSpeciaal/slurf', 'HakSpeciaal/slurp', 'HakSpeciaal/snurk', 'HakSpeciaal/sterk', 'HakSpeciaal/storm', 'HakSpeciaal/term', 'HakSpeciaal/tolk', 'HakSpeciaal/tulp', 'HakSpeciaal/twaalf', 'HakSpeciaal/velg', 'HakSpeciaal/verf', 'HakSpeciaal/volg', 'HakSpeciaal/volk', 'HakSpeciaal/vork', 'HakSpeciaal/vorm', 'HakSpeciaal/walg', 'HakSpeciaal/walm', 'HakSpeciaal/warm', 'HakSpeciaal/welp', 'HakSpeciaal/werk', 'HakSpeciaal/werp', 'HakSpeciaal/wolf', 'HakSpeciaal/wolk', 'HakSpeciaal/worm', 'HakSpeciaal/worp', 'HakSpeciaal/zalf', 'HakSpeciaal/zalm', 'HakSpeciaal/zelf', 'HakSpeciaal/zerk', 'HakSpeciaal/zorg', 'HakSpeciaal/zwerm'
             ]
 
-            const questionLucht = [
+            const questionsLucht = [
                 'Lucht/afwachten', 'Lucht/ach', 'Lucht/acht', 'Lucht/achter', 'Lucht/allicht', 'Lucht/bedacht', 'Lucht/belachelijk', 'Lucht/bergachtig', 'Lucht/bericht', 'Lucht/bezocht', 'Lucht/burcht', 'Lucht/chaos', 'Lucht/dicht', 'Lucht/dichtbij', 'Lucht/dichte', 'Lucht/dochter', 'Lucht/echo', 'Lucht/echt', 'Lucht/echte', 'Lucht/gedicht', 'Lucht/gekocht', 'Lucht/gerecht', 'Lucht/gerucht', 'Lucht/gevecht', 'Lucht/gewicht', 'Lucht/goochelaar', 'Lucht/goochelen', 'Lucht/joch', 'Lucht/juichen', 'Lucht/kachel', 'Lucht/kinderachtig', 'Lucht/klucht', 'Lucht/knechten', 'Lucht/kuchen', 'Lucht/lach', 'Lucht/lachen', 'Lucht/lacht', 'Lucht/lichaam', 'Lucht/lucht', 'Lucht/nachtegaal', 'Lucht/nicht', 'Lucht/nichten', 'Lucht/och', 'Lucht/ochtend', 'Lucht/onverwachte', 'Lucht/oprichten', 'Lucht/optocht', 'Lucht/pech', 'Lucht/pracht', 'Lucht/recht', 'Lucht/rechte', 'Lucht/rechter', 'Lucht/rechts', 'Lucht/slecht', 'Lucht/slechte', 'Lucht/specht', 'Lucht/tachtig', 'Lucht/techniek', 'Lucht/technisch', 'Lucht/terecht', 'Lucht/toch', 'Lucht/tocht', 'Lucht/tochten', 'Lucht/utrecht', 'Lucht/vacht', 'Lucht/vachten', 'Lucht/vannacht', 'Lucht/verlichte', 'Lucht/verrichten', 'Lucht/verwacht', 'Lucht/verwachten', 'Lucht/vlucht', 'Lucht/vluchten', 'Lucht/vocht', 'Lucht/wachten', 'Lucht/wellicht', 'Lucht/zacht', 'Lucht/zachte', 'Lucht/zachter', 'Lucht/zenuwachtig', 'Lucht/zich', 'Lucht/zicht', 'Lucht/zucht', 'Lucht/zuchten'
             ]
 
@@ -167,9 +168,10 @@
                 }
             };
 
-            console.log('Questions to ask: ' + questions);
+            // console.log('Questions to ask: ' + questions);
 
             if (restValue > 0) {
+                console.log('Rest value is there so add more questions to the array');
                 // Pick a random categorie
                 const randomCategorie = categories[Math.floor(Math.random() * categories.length)];
                 // console.log('random categorie =>', randomCategorie);
@@ -184,11 +186,32 @@
 
             // console.log('Questions to ask: ' + questions);
             localStorage.setItem('questionsToAsk', questions);
+            questions = shuffle(questions);
+            // console.log('Questions to ask shuffled: ' + questions);
 
             // Set the audio file and answer in the form
             let antwoord = questions[localStorage.getItem('totaalBeantwoord')];
 
             fillAnswer(antwoord);
+        }
+
+        function shuffle(array) {
+            var currentIndex = array.length, temporaryValue, randomIndex;
+
+            // While there remain elements to shuffle...
+            while (0 !== currentIndex) {
+
+                // Pick a remaining element...
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex -= 1;
+
+                // And swap it with the current element.
+                temporaryValue = array[currentIndex];
+                array[currentIndex] = array[randomIndex];
+                array[randomIndex] = temporaryValue;
+            }
+
+            return array;
         }
 
         function fillAnswer(antwoord) {
@@ -207,6 +230,12 @@
                     break;
                 case 'hak':
                     return 'questionsHak';
+                    break;
+                case 'hakspeciaal':
+                    return 'questionsHakSpeciaal';
+                    break;
+                case 'lucht':
+                    return 'questionsLucht';
                     break;
                 default:
                     break;
