@@ -1,25 +1,16 @@
-<html>
+<!doctype html>
+<html lang="nl">
 
 <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="style.css">
     <title>Spelling oefenen</title>
     <meta name="description"
         content="Op spelling oefenen kunnen kinderen de spelling aan de hand van audiobestanden leren schrijven">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
-        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
-        crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
-        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
-        crossorigin="anonymous"></script>
-
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
-        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
-        crossorigin="anonymous"></script>
-    <link rel="stylesheet" type="text/css" href="style.css">
     <script>
-
         function validateForm() {
             // Get the input
             let invoer = $.trim($('#invoer').val().toLowerCase());
@@ -29,7 +20,7 @@
 
             // Create some empty variables
             let message = '';
-            let className = 'resultaatFout';
+            let className = 'alert alert-danger';
 
             // Check if there is any answer
             if (invoer == "") {
@@ -39,7 +30,7 @@
                 if (invoer === antwoord || invoer === 'test') { // Debug purpose
                     // Set correct question message and class
 
-                    className = 'resultaatGoed';
+                    className = 'alert alert-success';
 
                     // Add +1 for the questions we have answerd
                     saveCorrectAmountOfQuestions();
@@ -49,6 +40,9 @@
 
                     // Check if we are done with the test
                     message = checkWhatToShowNext();
+
+                    // Hide the progressbar
+                    $('#progressBarBlock').hide();
                 } else {
                     // Set wrong question message and class
                     message = 'Helaas probeer het nog eens';
@@ -61,6 +55,7 @@
             // Set the correct message and class
             $('#result').html(message);
             $('#result').attr('class', className);
+            $('#result').show();
 
             return false;
         }
@@ -104,8 +99,38 @@
 
             // Set the audio file
             setAudioInformation();
+
+            // Start the time
+            startProgressBar();
         }
 
+        function startProgressBar() {
+            var i = 0;
+
+            if (i == 0) {
+                i = 1;
+                var elem = document.getElementById("progressbar");
+                var width = 1;
+                var id = setInterval(frame, 200);
+                function frame() {
+                    if (width >= 100) {
+                        clearInterval(id);
+                        i = 0;
+                    } else {
+                        width++;
+                        elem.style.width = width + "%";
+
+                        if (width === 50) {
+                            elem.className = 'progress-bar bg-warning';
+                        }
+
+                        if (width === 80) {
+                            elem.className = 'progress-bar bg-danger';
+                        }
+                    }
+                }
+            }
+        }
         function setDefaultValues() {
             if (localStorage.getItem('totaalGoed') === null) {
                 localStorage.setItem('totaalGoed', 0);
@@ -126,6 +151,8 @@
             // Set the title
             let totaalBeantwoord = Number(localStorage.getItem('totaalBeantwoord')) + 1;
             document.getElementById('title').innerHTML = 'Vraag ' + totaalBeantwoord + ' van ' + localStorage.getItem('amountOfQuestions');
+
+            $('#result').hide();
         }
 
         function setAudioInformation() {
@@ -233,10 +260,12 @@
         }
 
         function fillAnswer(audioInfo) {
-            let antwoord = audioInfo.split('/')[1];
-            // console.log('antwoord: ' + antwoord);
-            document.getElementById('antwoord').value = antwoord;
-            document.getElementById('audioBestand').src = './Audio/' + audioInfo + '.m4a';
+            if (audioInfo) {
+                let antwoord = audioInfo.split('/')[1];
+                // console.log('antwoord: ' + antwoord);
+                document.getElementById('antwoord').value = antwoord;
+                document.getElementById('audioBestand').src = './Audio/' + audioInfo + '.m4a';
+            }
         }
 
         function getArrayName(categorieName) {
@@ -268,33 +297,103 @@
 </head>
 
 <body onload="onInit();">
-    <div class="main">
-        <div class="intro">
-            <h1><a href="index.html" id="title">Spelling oefenen</a></h1>
-            <div class="intro">Luister maar het fragment</div>
-        </div>
+    <div class="my-container">
+        <img src="./Images/background.jpg">
 
-        <div class="sectie">
-            <iframe src="silence.mp3" allow="autoplay" id="audio" style="display:none"></iframe>
-            <audio id="audioBestand" type="audio/x-m4a" controls autoplay="autoplay">
-                <code> Your browser doesn't support audio tags</code>
-            </audio>
-        </div>
+        <div class="container">
+            <ul class="nav">
+                <li class="nav-item">
+                    <a class="nav-link active" href="index.html">Home</a>
+                </li>
+            </ul>
 
-        <div class="sectie">
-            <form name="myForm" action="oefenen.html" onsubmit="return validateForm()" method="post">
+            <form class="needs-validation" novalidate name="myForm" action="oefenen.html"
+                onsubmit="return validateForm()" method="post">
                 <input type="hidden" id="antwoord">
-                <label>Type hier je antwoord</label>
-                <div><input class="input" type="text" id="invoer"></div>
-                <div><button class="button" type="submit" id="controleren">controleren</button></div>
+
+                <div class="form-group">
+                    <h1 id="title">Spelling oefenen</h1>
+                    <div class="bd-example">Luister maar het fragment en type het juiste woord in</div>
+                </div>
+
+                <div class="form-group">
+                    <iframe src="./Audio/silence.mp3" allow="autoplay" id="audio" style="display:none"></iframe>
+                    <audio id="audioBestand" type="audio/x-m4a" controls autoplay="autoplay">
+                        <code> Your browser doesn't support audio tags</code>
+                    </audio>
+                </div>
+
+                <div class="form-group">
+                    <label>Type hier je antwoord</label>
+                    <input class="input" type="text" id="invoer" required>
+                    <small id="invoerHelp" class="form-text text-muted">
+                        Denk goed na welke categorie het woord valt en pas de juiste regel toe
+                    </small>
+                    <div class="invalid-feedback">
+                        Je hebt nog geen antwoord gegeven
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="progress" id="progressBarBlock">
+                        <div class="progress-bar bg-success" id="progressbar" role="progressbar" style="width: 0%;"
+                            aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <button class="btn btn-outline-success" type="submit" id="controleren">controleren</button>
+                </div>
+
+
+
+                <div class="form-group">
+                    <div class="alert alert-danger" role="alert" id="result" data-cy="validation-message"></div>
+                </div>
+
+                <div class="form-group">
+                    <div class="result" id="result"></div>
+                </div>
             </form>
-
-            <div><button class="button hidden" onclick="location.reload();" id="volgende">volgende</button></div>
-            <div><button class="button hidden" onclick="location.href='index.html';" id="klaar">klaar!</button></div>
+            <div class="form-group">
+                <button class="btn btn-outline-success hidden" onclick="location.reload();"
+                    id="volgende">volgende</button>
+                <button class="btn btn-outline-success hidden" onclick="location.href='index.html';"
+                    id="klaar">klaar!</button>
+            </div>
         </div>
-
-        <div class="result" id="result"></div>
     </div>
+
+    <script>
+        // Example starter JavaScript for disabling form submissions if there are invalid fields
+        (function () {
+            'use strict';
+            window.addEventListener('load', function () {
+                // Fetch all the forms we want to apply custom Bootstrap validation styles to
+                var forms = document.getElementsByClassName('needs-validation');
+                // Loop over them and prevent submission
+                var validation = Array.prototype.filter.call(forms, function (form) {
+                    form.addEventListener('submit', function (event) {
+                        if (form.checkValidity() === false) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }
+                        form.classList.add('was-validated');
+                    }, false);
+                });
+            }, false);
+        })();
+    </script>
+
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+        crossorigin="anonymous"></script>
 </body>
 
 </html>
