@@ -10,7 +10,20 @@
     <title>Spelling oefenen</title>
     <meta name="description"
         content="Op spelling oefenen kunnen kinderen de spelling aan de hand van audiobestanden leren schrijven">
+    <script src="./built/person.js"></script>
+    <script src="./built/category.js"></script>
+    <script src="./built/question.js"></script>
+    <script src="./built/statistic.js"></script>
+    <script src="./built/progressbar.js"></script>
+    <script src="./built/helper.js"></script>
     <script>
+        let person = new Person();
+        let category = new Category();
+        let question = new Question();
+        let statistics = new Statistics();
+        let progressbar = new Progressbar();
+        let helper = new Helper();
+
         function validateForm() {
             // Get the input
             let invoer = $.trim($('#invoer').val().toLowerCase());
@@ -23,7 +36,7 @@
             let className = 'alert alert-danger';
 
             // Check if there is any answer
-            if (invoer == "") {
+            if (invoer === '') {
                 message = 'Je hebt nog geen antwoord gegeven!';
             } else {
                 // Check if the answer is correct
@@ -33,10 +46,10 @@
                     className = 'alert alert-success';
 
                     // Add +1 for the questions we have answerd
-                    saveCorrectAmountOfQuestions();
+                    statistics.addOneAnsweredCorreclty();
 
                     // Keep track on how many questions here are beeing answerd correctly
-                    saveAmountOfQuestions();
+                    statistics.addOneTotalAnswered();
 
                     // Check if we are done with the test
                     message = checkWhatToShowNext();
@@ -48,7 +61,7 @@
                     message = 'Helaas probeer het nog eens';
 
                     // Keep track on how many questions here are beeing answerd wrongly
-                    saveWrongAmountOfQuestions();
+                    statistics.addOneAnsweredWrongly();
                 }
             }
 
@@ -60,40 +73,35 @@
             return false;
         }
 
-        function saveAmountOfQuestions() {
-            localStorage.setItem('totaalBeantwoord', parseInt(localStorage.getItem('totaalBeantwoord')) + 1);
-        }
-
-        function saveCorrectAmountOfQuestions() {
-            localStorage.setItem('totaalGoed', parseInt(localStorage.getItem('totaalGoed')) + 1);
-        }
-
-        function saveWrongAmountOfQuestions() {
-            localStorage.setItem('totaalFout', parseInt(localStorage.getItem('totaalFout')) + 1);
-        }
-
         function checkWhatToShowNext() {
-            if (parseInt(localStorage.getItem('totaalBeantwoord')) === parseInt(localStorage.getItem('amountOfQuestions'))) {
+            // Check if we have answerd the last question
+            if (parseInt(statistics.getTotalAnswered()) === parseInt(question.getAmountOfQuestions())) {
                 // Hide the buttons to interact with the form
-                document.getElementById('controleren').style.display = 'none';
-                document.getElementById('volgende').style.display = 'none';
+                $('#controleren').hide();
+                $('#volgende').hide();
 
                 // Show the button to go to the main page
-                document.getElementById('klaar').style.display = 'block';
+                $('#klaar').show();
 
-                return 'Goede gedaan ' + localStorage.getItem('firstname') + ' je bent klaar voor vandaag!';
+                return 'Goede gedaan ' + person.getFirstName() + ' je bent klaar voor vandaag!';
             } else {
                 // Hide the controleren button
-                document.getElementById('controleren').style.display = 'none';
+                $('#controleren').hide();
+
+                // Hide the finished button
+                $('#klaar').hide();
 
                 // Show the next button
-                document.getElementById('volgende').style.display = 'block';
+                $('#volgende').show();
 
-                return 'Goede gedaan ' + localStorage.getItem('firstname') + ' op naar de volgende vraag!';
+                return 'Goede gedaan ' + person.getFirstName() + ' op naar de volgende vraag!';
             }
         }
 
         function onInit() {
+            // Check if required fields are set
+            checkRequiredField();
+
             // Set default values
             setDefaultValues();
 
@@ -101,197 +109,131 @@
             setAudioInformation();
 
             // Start the time
-            startProgressBar();
+            progressbar.start();
         }
 
-        function startProgressBar() {
-            var i = 0;
+        function checkRequiredField() {
+            let selectedCategories = category.getCategory();
 
-            if (i == 0) {
-                i = 1;
-                var elem = document.getElementById("progressbar");
-                var width = 1;
-                var id = setInterval(frame, 200);
-                function frame() {
-                    if (width >= 100) {
-                        clearInterval(id);
-                        i = 0;
-                    } else {
-                        width++;
-                        elem.style.width = width + "%";
-
-                        if (width === 50) {
-                            elem.className = 'progress-bar bg-warning';
-                        }
-
-                        if (width === 80) {
-                            elem.className = 'progress-bar bg-danger';
-                        }
-                    }
-                }
+            if (person.isEmpty()) {
+                console.log('Geen data redirect nu!');
+                window.location.replace('index.html');
             }
         }
+
         function setDefaultValues() {
-            if (localStorage.getItem('totaalGoed') === null) {
-                localStorage.setItem('totaalGoed', 0);
-            }
-
-            if (localStorage.getItem('totaalFout') === null) {
-                localStorage.setItem('totaalFout', 0);
-            }
-
-            if (localStorage.getItem('totaalBeantwoord') === null) {
-                localStorage.setItem('totaalBeantwoord', 0);
-            }
-
             // Hide by default the next button
-            document.getElementById('volgende').style.display = 'none';
-            document.getElementById('klaar').style.display = 'none';
+            $('#volgende').hide();
+            $('#klaar').hide();
 
             // Set the title
-            let totaalBeantwoord = Number(localStorage.getItem('totaalBeantwoord')) + 1;
-            document.getElementById('title').innerHTML = 'Vraag ' + totaalBeantwoord + ' van ' + localStorage.getItem('amountOfQuestions');
-
+            $('#title').html('Vraag ' + (parseInt(statistics.getTotalAnswered()) + 1) + ' van ' + question.getAmountOfQuestions());
             $('#result').hide();
         }
 
         function setAudioInformation() {
             // Data allready loaded so just pick the answer from the stored array
-            if (localStorage.getItem('questionsToAsk')) {
-                let questionsArray = localStorage.getItem('questionsToAsk').split(',');
-                let antwoord = questionsArray[localStorage.getItem('totaalBeantwoord')];
+            if (question.getQuestionsToAsk()) {
+                let questionsArray = question.getQuestionsToAsk().split(',');
+                let antwoord = questionsArray[statistics.getTotalAnswered()];
                 // console.log('het antwoord: ' + antwoord);
                 fillAnswer(antwoord);
                 return false;
-            }
+            } else {
+                // Create an array with all audio files
+                const questionsPlank = [
+                    'Plank/bedanken', 'Plank/anker', 'Plank/ankers', 'Plank/bank', 'Plank/banken', 'Plank/bedankt', 'Plank/bink', 'Plank/bonk', 'Plank/bonken', 'Plank/bonkt', 'Plank/dank', 'Plank/dankbaar', 'Plank/danken', 'Plank/denk', 'Plank/denken', 'Plank/donker', 'Plank/donkere', 'Plank/drink', 'Plank/drinken', 'Plank/drinkt', 'Plank/enkel', 'Plank/enkele', 'Plank/enkelvoud', 'Plank/enkhuizen', 'Plank/flink', 'Plank/flinke', 'Plank/frankrijk', 'Plank/hinken', 'Plank/hinkt', 'Plank/jonkvrouw', 'Plank/klank', 'Plank/klanken', 'Plank/klink', 'Plank/klinkt', 'Plank/linksaf', 'Plank/medeklinker', 'Plank/ondanks', 'Plank/pink', 'Plank/pinken', 'Plank/plank', 'Plank/planken', 'Plank/plankton', 'Plank/schenk', 'Plank/schenken', 'Plank/sprinkhaan', 'Plank/stank', 'Plank/stinken', 'Plank/stinkt', 'Plank/stonk', 'Plank/stonken', 'Plank/vink', 'Plank/vinken', 'Plank/vinkeveen', 'Plank/vonk', 'Plank/vonken', 'Plank/wankelen', 'Plank/winkel', 'Plank/winkelier', 'Plank/zwenken'
+                ]
 
-            // Create an array with all audio files
-            const questionsPlank = [
-                'Plank/bedanken', 'Plank/anker', 'Plank/ankers', 'Plank/bank', 'Plank/banken', 'Plank/bedankt', 'Plank/bink', 'Plank/bonk', 'Plank/bonken', 'Plank/bonkt', 'Plank/dank', 'Plank/dankbaar', 'Plank/danken', 'Plank/denk', 'Plank/denken', 'Plank/donker', 'Plank/donkere', 'Plank/drink', 'Plank/drinken', 'Plank/drinkt', 'Plank/enkel', 'Plank/enkele', 'Plank/enkelvoud', 'Plank/enkhuizen', 'Plank/flink', 'Plank/flinke', 'Plank/frankrijk', 'Plank/hinken', 'Plank/hinkt', 'Plank/jonkvrouw', 'Plank/klank', 'Plank/klanken', 'Plank/klink', 'Plank/klinkt', 'Plank/linksaf', 'Plank/medeklinker', 'Plank/ondanks', 'Plank/pink', 'Plank/pinken', 'Plank/plank', 'Plank/planken', 'Plank/plankton', 'Plank/schenk', 'Plank/schenken', 'Plank/sprinkhaan', 'Plank/stank', 'Plank/stinken', 'Plank/stinkt', 'Plank/stonk', 'Plank/stonken', 'Plank/vink', 'Plank/vinken', 'Plank/vinkeveen', 'Plank/vonk', 'Plank/vonken', 'Plank/wankelen', 'Plank/winkel', 'Plank/winkelier', 'Plank/zwenken'
-            ]
+                const questionsZing = [
+                    'Zing/aanmoediging', 'Zing/aanrijding', 'Zing/angel', 'Zing/angst', 'Zing/bang', 'Zing/bange', 'Zing/behangen', 'Zing/bekeuring', 'Zing/belangrijke', 'Zing/bengel', 'Zing/bestemming', 'Zing/beweging', 'Zing/bewondering', 'Zing/bezichtiging', 'Zing/brengen', 'Zing/constatering', 'Zing/dingen', 'Zing/dringen', 'Zing/dwang', 'Zing/dwingt', 'Zing/efteling', 'Zing/eng', 'Zing/enge', 'Zing/engeland', 'Zing/engels', 'Zing/gang', 'Zing/gangen', 'Zing/gemengd', 'Zing/gevangene', 'Zing/ging', 'Zing/gingen', 'Zing/groningen', 'Zing/hangen', 'Zing/hanger', 'Zing/haring', 'Zing/haringen', 'Zing/hengel', 'Zing/hengelo', 'Zing/hengst', 'Zing/herinnering', 'Zing/honger', 'Zing/honing', 'Zing/ingang', 'Zing/jonge', 'Zing/jongen', 'Zing/jongst', 'Zing/ketting', 'Zing/koning', 'Zing/koningin', 'Zing/kringen', 'Zing/lange', 'Zing/langer', 'Zing/langst', 'Zing/langzaam', 'Zing/leiding', 'Zing/lieveling', 'Zing/ligging', 'Zing/longen', 'Zing/meng', 'Zing/mengen', 'Zing/mengt', 'Zing/mustangs', 'Zing/nieuweling', 'Zing/omgeving', 'Zing/omleiding', 'Zing/opbrengst', 'Zing/overhoring', 'Zing/overwinning', 'Zing/rangen', 'Zing/redenering', 'Zing/reservering', 'Zing/richting', 'Zing/ringen', 'Zing/riolering', 'Zing/schemering', 'Zing/slang', 'Zing/slinger', 'Zing/sluiting', 'Zing/springen', 'Zing/sprong', 'Zing/sprongen', 'Zing/staking', 'Zing/stang', 'Zing/stangen', 'Zing/stemming', 'Zing/stengel', 'Zing/streng', 'Zing/strenge', 'Zing/tangen', 'Zing/tekening', 'Zing/tong', 'Zing/tongen', 'Zing/triangel', 'Zing/uitbreiding', 'Zing/uitnodiging', 'Zing/uitzending', 'Zing/uitzondering', 'Zing/vangen', 'Zing/vanger', 'Zing/vangt', 'Zing/verdieping', 'Zing/vergadering', 'Zing/verhouding', 'Zing/verlichting', 'Zing/verrassing', 'Zing/verrijking', 'Zing/versnelling', 'Zing/vertraging', 'Zing/vesting', 'Zing/vinding', 'Zing/vinger', 'Zing/vlissingen', 'Zing/vluchteling', 'Zing/voorrang', 'Zing/voorstelling', 'Zing/wandeling', 'Zing/wangen', 'Zing/wrijving', 'Zing/wringen', 'Zing/zanger', 'Zing/zangeres', 'Zing/zingen', 'Zing/zwanger'
+                ]
 
-            const questionsZing = [
-                'Zing/aanmoediging', 'Zing/aanrijding', 'Zing/angel', 'Zing/angst', 'Zing/bang', 'Zing/bange', 'Zing/behangen', 'Zing/bekeuring', 'Zing/belangrijke', 'Zing/bengel', 'Zing/bestemming', 'Zing/beweging', 'Zing/bewondering', 'Zing/bezichtiging', 'Zing/brengen', 'Zing/constatering', 'Zing/dingen', 'Zing/dringen', 'Zing/dwang', 'Zing/dwingt', 'Zing/efteling', 'Zing/eng', 'Zing/enge', 'Zing/engeland', 'Zing/engels', 'Zing/gang', 'Zing/gangen', 'Zing/gemengd', 'Zing/gevangene', 'Zing/ging', 'Zing/gingen', 'Zing/groningen', 'Zing/hangen', 'Zing/hanger', 'Zing/haring', 'Zing/haringen', 'Zing/hengel', 'Zing/hengelo', 'Zing/hengst', 'Zing/herinnering', 'Zing/honger', 'Zing/honing', 'Zing/ingang', 'Zing/jonge', 'Zing/jongen', 'Zing/jongst', 'Zing/ketting', 'Zing/koning', 'Zing/koningin', 'Zing/kringen', 'Zing/lange', 'Zing/langer', 'Zing/langst', 'Zing/langzaam', 'Zing/leiding', 'Zing/lieveling', 'Zing/ligging', 'Zing/longen', 'Zing/meng', 'Zing/mengen', 'Zing/mengt', 'Zing/mustangs', 'Zing/nieuweling', 'Zing/omgeving', 'Zing/omleiding', 'Zing/opbrengst', 'Zing/overhoring', 'Zing/overwinning', 'Zing/rangen', 'Zing/redenering', 'Zing/reservering', 'Zing/richting', 'Zing/ringen', 'Zing/riolering', 'Zing/schemering', 'Zing/slang', 'Zing/slinger', 'Zing/sluiting', 'Zing/springen', 'Zing/sprong', 'Zing/sprongen', 'Zing/staking', 'Zing/stang', 'Zing/stangen', 'Zing/stemming', 'Zing/stengel', 'Zing/streng', 'Zing/strenge', 'Zing/tangen', 'Zing/tekening', 'Zing/tong', 'Zing/tongen', 'Zing/triangel', 'Zing/uitbreiding', 'Zing/uitnodiging', 'Zing/uitzending', 'Zing/uitzondering', 'Zing/vangen', 'Zing/vanger', 'Zing/vangt', 'Zing/verdieping', 'Zing/vergadering', 'Zing/verhouding', 'Zing/verlichting', 'Zing/verrassing', 'Zing/verrijking', 'Zing/versnelling', 'Zing/vertraging', 'Zing/vesting', 'Zing/vinding', 'Zing/vinger', 'Zing/vlissingen', 'Zing/vluchteling', 'Zing/voorrang', 'Zing/voorstelling', 'Zing/wandeling', 'Zing/wangen', 'Zing/wrijving', 'Zing/wringen', 'Zing/zanger', 'Zing/zangeres', 'Zing/zingen', 'Zing/zwanger'
-            ]
+                const questionsHak = [
+                    'Hak/films', 'Hak/arts', 'Hak/balts', 'Hak/erts', 'Hak/fronst', 'Hak/grenst', 'Hak/kilts', 'Hak/kletst', 'Hak/korps', 'Hak/krimpt', 'Hak/kwarts', 'Hak/nerts', 'Hak/plaats', 'Hak/plenst', 'Hak/plonst', 'Hak/pumps', 'Hak/schalks', 'Hak/scherps', 'Hak/snurkt', 'Hak/splits', 'Hak/sponst', 'Hak/spraak', 'Hak/sprak', 'Hak/spreek', 'Hak/spreekt', 'Hak/spreuk', 'Hak/sprint', 'Hak/sprits', 'Hak/stompt', 'Hak/straal', 'Hak/straalt', 'Hak/straf', 'Hak/straft', 'Hak/strak', 'Hak/straks', 'Hak/streek', 'Hak/streep', 'Hak/streept', 'Hak/strek', 'Hak/strekt', 'Hak/striem', 'Hak/strijk', 'Hak/strijkt', 'Hak/strik', 'Hak/strikt', 'Hak/strip', 'Hak/stroef', 'Hak/strook', 'Hak/stroom', 'Hak/stroomt', 'Hak/stroop', 'Hak/strop', 'Hak/struik', 'Hak/terts', 'Hak/tjilpt', 'Hak/zelfs', 'Hak/zwerft', 'Hak/zwermt'
+                ]
 
-            const questionsHak = [
-                'Hak/films', 'Hak/arts', 'Hak/balts', 'Hak/erts', 'Hak/fronst', 'Hak/grenst', 'Hak/kilts', 'Hak/kletst', 'Hak/korps', 'Hak/krimpt', 'Hak/kwarts', 'Hak/nerts', 'Hak/plaats', 'Hak/plenst', 'Hak/plonst', 'Hak/pumps', 'Hak/schalks', 'Hak/scherps', 'Hak/snurkt', 'Hak/splits', 'Hak/sponst', 'Hak/spraak', 'Hak/sprak', 'Hak/spreek', 'Hak/spreekt', 'Hak/spreuk', 'Hak/sprint', 'Hak/sprits', 'Hak/stampt', 'Hak/stompt', 'Hak/straal', 'Hak/straalt', 'Hak/straf', 'Hak/straft', 'Hak/strak', 'Hak/straks', 'Hak/streek', 'Hak/streep', 'Hak/streept', 'Hak/strek', 'Hak/strekt', 'Hak/striem', 'Hak/strijk', 'Hak/strijkt', 'Hak/strik', 'Hak/strikt', 'Hak/strip', 'Hak/stroef', 'Hak/strook', 'Hak/stroom', 'Hak/stroomt', 'Hak/stroop', 'Hak/strop', 'Hak/struik', 'Hak/terts', 'Hak/tjilpt', 'Hak/zelfs', 'Hak/zwerft', 'Hak/zwermt'
-            ]
+                const questionsHakSpeciaal = [
+                    'Hakspeciaal/berg', 'HakSpeciaal/arm', 'HakSpeciaal/balk', 'HakSpeciaal/belg', 'HakSpeciaal/berk', 'HakSpeciaal/berm', 'HakSpeciaal/darm', 'HakSpeciaal/dorp', 'HakSpeciaal/durf', 'HakSpeciaal/dwerg', 'HakSpeciaal/erg', 'HakSpeciaal/film', 'HakSpeciaal/golf', 'HakSpeciaal/half', 'HakSpeciaal/hark', 'HakSpeciaal/harp', 'HakSpeciaal/helm', 'HakSpeciaal/help', 'HakSpeciaal/hoorn', 'HakSpeciaal/hulp', 'HakSpeciaal/hurk', 'HakSpeciaal/jurk', 'HakSpeciaal/kalf', 'HakSpeciaal/kalm', 'HakSpeciaal/kerk', 'HakSpeciaal/kern', 'HakSpeciaal/kolk', 'HakSpeciaal/kurk', 'HakSpeciaal/larf', 'HakSpeciaal/melk', 'HakSpeciaal/merk', 'HakSpeciaal/norm', 'HakSpeciaal/palm', 'HakSpeciaal/park', 'HakSpeciaal/perk', 'HakSpeciaal/schelp', 'HakSpeciaal/scherf', 'HakSpeciaal/scherm', 'HakSpeciaal/scherp', 'HakSpeciaal/slurf', 'HakSpeciaal/slurp', 'HakSpeciaal/snurk', 'HakSpeciaal/sterk', 'HakSpeciaal/storm', 'HakSpeciaal/term', 'HakSpeciaal/tolk', 'HakSpeciaal/tulp', 'HakSpeciaal/twaalf', 'HakSpeciaal/velg', 'HakSpeciaal/verf', 'HakSpeciaal/volg', 'HakSpeciaal/volk', 'HakSpeciaal/vork', 'HakSpeciaal/vorm', 'HakSpeciaal/walg', 'HakSpeciaal/walm', 'HakSpeciaal/warm', 'HakSpeciaal/welp', 'HakSpeciaal/werk', 'HakSpeciaal/werp', 'HakSpeciaal/wolf', 'HakSpeciaal/wolk', 'HakSpeciaal/worm', 'HakSpeciaal/worp', 'HakSpeciaal/zalf', 'HakSpeciaal/zalm', 'HakSpeciaal/zelf', 'HakSpeciaal/zerk', 'HakSpeciaal/zorg', 'HakSpeciaal/zwerm'
+                ]
 
-            const questionsHakSpeciaal = [
-                'Hakspeciaal/berg', 'HakSpeciaal/arm', 'HakSpeciaal/balk', 'HakSpeciaal/belg', 'HakSpeciaal/berk', 'HakSpeciaal/berm', 'HakSpeciaal/darm', 'HakSpeciaal/dorp', 'HakSpeciaal/durf', 'HakSpeciaal/dwerg', 'HakSpeciaal/erg', 'HakSpeciaal/film', 'HakSpeciaal/golf', 'HakSpeciaal/half', 'HakSpeciaal/hark', 'HakSpeciaal/harp', 'HakSpeciaal/helm', 'HakSpeciaal/help', 'HakSpeciaal/hoorn', 'HakSpeciaal/hulp', 'HakSpeciaal/hurk', 'HakSpeciaal/jurk', 'HakSpeciaal/kalf', 'HakSpeciaal/kalm', 'HakSpeciaal/kerk', 'HakSpeciaal/kern', 'HakSpeciaal/kolk', 'HakSpeciaal/kurk', 'HakSpeciaal/larf', 'HakSpeciaal/melk', 'HakSpeciaal/merk', 'HakSpeciaal/norm', 'HakSpeciaal/palm', 'HakSpeciaal/park', 'HakSpeciaal/perk', 'HakSpeciaal/schelp', 'HakSpeciaal/scherf', 'HakSpeciaal/scherm', 'HakSpeciaal/scherp', 'HakSpeciaal/slurf', 'HakSpeciaal/slurp', 'HakSpeciaal/snurk', 'HakSpeciaal/sterk', 'HakSpeciaal/storm', 'HakSpeciaal/term', 'HakSpeciaal/tolk', 'HakSpeciaal/tulp', 'HakSpeciaal/twaalf', 'HakSpeciaal/velg', 'HakSpeciaal/verf', 'HakSpeciaal/volg', 'HakSpeciaal/volk', 'HakSpeciaal/vork', 'HakSpeciaal/vorm', 'HakSpeciaal/walg', 'HakSpeciaal/walm', 'HakSpeciaal/warm', 'HakSpeciaal/welp', 'HakSpeciaal/werk', 'HakSpeciaal/werp', 'HakSpeciaal/wolf', 'HakSpeciaal/wolk', 'HakSpeciaal/worm', 'HakSpeciaal/worp', 'HakSpeciaal/zalf', 'HakSpeciaal/zalm', 'HakSpeciaal/zelf', 'HakSpeciaal/zerk', 'HakSpeciaal/zorg', 'HakSpeciaal/zwerm'
-            ]
+                const questionsLucht = [
+                    'Lucht/afwachten', 'Lucht/ach', 'Lucht/acht', 'Lucht/achter', 'Lucht/allicht', 'Lucht/bedacht', 'Lucht/belachelijk', 'Lucht/bergachtig', 'Lucht/bericht', 'Lucht/bezocht', 'Lucht/burcht', 'Lucht/chaos', 'Lucht/dicht', 'Lucht/dichtbij', 'Lucht/dichte', 'Lucht/dochter', 'Lucht/echo', 'Lucht/echt', 'Lucht/echte', 'Lucht/gedicht', 'Lucht/gekocht', 'Lucht/gerecht', 'Lucht/gerucht', 'Lucht/gevecht', 'Lucht/gewicht', 'Lucht/goochelaar', 'Lucht/goochelen', 'Lucht/joch', 'Lucht/juichen', 'Lucht/kachel', 'Lucht/kinderachtig', 'Lucht/klucht', 'Lucht/knechten', 'Lucht/kuchen', 'Lucht/lach', 'Lucht/lachen', 'Lucht/lacht', 'Lucht/lichaam', 'Lucht/lucht', 'Lucht/nachtegaal', 'Lucht/nicht', 'Lucht/nichten', 'Lucht/och', 'Lucht/ochtend', 'Lucht/onverwachte', 'Lucht/oprichten', 'Lucht/optocht', 'Lucht/pech', 'Lucht/pracht', 'Lucht/recht', 'Lucht/rechte', 'Lucht/rechter', 'Lucht/rechts', 'Lucht/slecht', 'Lucht/slechte', 'Lucht/specht', 'Lucht/tachtig', 'Lucht/techniek', 'Lucht/technisch', 'Lucht/terecht', 'Lucht/toch', 'Lucht/tocht', 'Lucht/tochten', 'Lucht/utrecht', 'Lucht/vacht', 'Lucht/vachten', 'Lucht/vannacht', 'Lucht/verlichte', 'Lucht/verrichten', 'Lucht/verwacht', 'Lucht/verwachten', 'Lucht/vlucht', 'Lucht/vluchten', 'Lucht/vocht', 'Lucht/wachten', 'Lucht/wellicht', 'Lucht/zacht', 'Lucht/zachte', 'Lucht/zachter', 'Lucht/zenuwachtig', 'Lucht/zich', 'Lucht/zicht', 'Lucht/zucht', 'Lucht/zuchten'
+                ]
 
-            const questionsLucht = [
-                'Lucht/afwachten', 'Lucht/ach', 'Lucht/acht', 'Lucht/achter', 'Lucht/allicht', 'Lucht/bedacht', 'Lucht/belachelijk', 'Lucht/bergachtig', 'Lucht/bericht', 'Lucht/bezocht', 'Lucht/burcht', 'Lucht/chaos', 'Lucht/dicht', 'Lucht/dichtbij', 'Lucht/dichte', 'Lucht/dochter', 'Lucht/echo', 'Lucht/echt', 'Lucht/echte', 'Lucht/gedicht', 'Lucht/gekocht', 'Lucht/gerecht', 'Lucht/gerucht', 'Lucht/gevecht', 'Lucht/gewicht', 'Lucht/goochelaar', 'Lucht/goochelen', 'Lucht/joch', 'Lucht/juichen', 'Lucht/kachel', 'Lucht/kinderachtig', 'Lucht/klucht', 'Lucht/knechten', 'Lucht/kuchen', 'Lucht/lach', 'Lucht/lachen', 'Lucht/lacht', 'Lucht/lichaam', 'Lucht/lucht', 'Lucht/nachtegaal', 'Lucht/nicht', 'Lucht/nichten', 'Lucht/och', 'Lucht/ochtend', 'Lucht/onverwachte', 'Lucht/oprichten', 'Lucht/optocht', 'Lucht/pech', 'Lucht/pracht', 'Lucht/recht', 'Lucht/rechte', 'Lucht/rechter', 'Lucht/rechts', 'Lucht/slecht', 'Lucht/slechte', 'Lucht/specht', 'Lucht/tachtig', 'Lucht/techniek', 'Lucht/technisch', 'Lucht/terecht', 'Lucht/toch', 'Lucht/tocht', 'Lucht/tochten', 'Lucht/utrecht', 'Lucht/vacht', 'Lucht/vachten', 'Lucht/vannacht', 'Lucht/verlichte', 'Lucht/verrichten', 'Lucht/verwacht', 'Lucht/verwachten', 'Lucht/vlucht', 'Lucht/vluchten', 'Lucht/vocht', 'Lucht/wachten', 'Lucht/wellicht', 'Lucht/zacht', 'Lucht/zachte', 'Lucht/zachter', 'Lucht/zenuwachtig', 'Lucht/zich', 'Lucht/zicht', 'Lucht/zucht', 'Lucht/zuchten'
-            ]
+                const questionEerOorEur = [
+                    'Eer-oor-eur/beeld', 'Eer-oor-eur/amersfoort', 'Eer-oor-eur/apeldoorn', 'Eer-oor-eur/behoorlijk', 'Eer-oor-eur/beurt', 'Eer-oor-eur/controleer', 'Eer-oor-eur/deel', 'Eer-oor-eur/deur', 'Eer-oor-eur/doornroosje', 'Eer-oor-eur/eekhoorns', 'Eer-oor-eur/eergisteren', 'Eer-oor-eur/eerlijk', 'Eer-oor-eur/eerst', 'Eer-oor-eur/geel', 'Eer-oor-eur/geheel', 'Eer-oor-eur/gehoord', 'Eer-oor-eur/geur', 'Eer-oor-eur/heelal', 'Eer-oor-eur/heerlijk', 'Eer-oor-eur/juweel', 'Eer-oor-eur/kantoor', 'Eer-oor-eur/keel', 'Eer-oor-eur/keurt', 'Eer-oor-eur/kleurt', 'Eer-oor-eur/lieveheersbeestje', 'Eer-oor-eur/meervoud', 'Eer-oor-eur/meneer', 'Eer-oor-eur/momenteel', 'Eer-oor-eur/neerslag', 'Eer-oor-eur/noord', 'Eer-oor-eur/noorwegen', 'Eer-oor-eur/onderdeel', 'Eer-oor-eur/probeer', 'Eer-oor-eur/regisseur', 'Eer-oor-eur/scheel', 'Eer-oor-eur/scheur', 'Eer-oor-eur/scheurt', 'Eer-oor-eur/schoorsteen', 'Eer-oor-eur/schoorstenen', 'Eer-oor-eur/sfeer', 'Eer-oor-eur/sleur', 'Eer-oor-eur/speels', 'Eer-oor-eur/speurt', 'Eer-oor-eur/steelt', 'Eer-oor-eur/teveel', 'Eer-oor-eur/treurt', 'Eer-oor-eur/veel', 'Eer-oor-eur/veertien', 'Eer-oor-eur/verkeer', 'Eer-oor-eur/verkeerd', 'Eer-oor-eur/vleermuis', 'Eer-oor-eur/vleermuizen', 'Eer-oor-eur/voordeliger', 'Eer-oor-eur/voorganger', 'Eer-oor-eur/voorlezer', 'Eer-oor-eur/voorrang', 'Eer-oor-eur/voorruit', 'Eer-oor-eur/voorstelling', 'Eer-oor-eur/voorverpakt', 'Eer-oor-eur/voorwaarde', 'Eer-oor-eur/voorzichtig', 'Eer-oor-eur/wanneer', 'Eer-oor-eur/weer', 'Eer-oor-eur/zeurt', 'Eer-oor-eur/zweer'
+                ]
 
-            let cat = localStorage.getItem('categorie');
+                // Calculate how many questions per category
+                let amountOfQuestions = question.getAmountOfQuestions();
+                let selectedCategories = category.getCategory().split(',');
+                let amountOfCategories = category.getAmountOfSelectedCategories();
 
-            // Calculate how many questions per category
-            let amountOfQuestions = localStorage.getItem('amountOfQuestions');
-            let categories = cat.split(',');
-            let amountOfCategories = categories.length;
+                // console.log('What selectedCategories: ' + selectedCategories);
+                // console.log('Amount of Questions: ' + amountOfQuestions);
+                // console.log('Amount of Categories: ' + amountOfCategories);
 
-            // console.log('What categories: ' + categories);
-            // console.log('Amount of Questions: ' + amountOfQuestions);
-            // console.log('Amount of Categories: ' + amountOfCategories);
+                let amountPerCat = parseInt(amountOfQuestions / amountOfCategories);
+                let restValue = amountOfQuestions % amountOfCategories;
 
-            let amountPerCat = parseInt(amountOfQuestions / amountOfCategories);
-            let restValue = amountOfQuestions % amountOfCategories;
+                // console.log('Amount per Category: ' + amountPerCat);
+                // console.log('Amount of rest value: ' + restValue);
 
-            // console.log('Amount per Category: ' + amountPerCat);
-            // console.log('Amount of rest value: ' + restValue);
+                let questions = [];
 
-            let questions = [];
-            for (let x = 0; x < categories.length; x++) {
-                let questionArrayName = getArrayName(categories[x]);
+                question.fillQuestions(selectedCategories, amountPerCat);
 
-                for (let x = 0; x < amountPerCat; x++) {
-                    // Pick a random question
-                    questions.push(getRandomCategorieQuestion(eval(questionArrayName)));
+                for (let x = 0; x < selectedCategories.length; x++) {
+                    let questionArrayName = selectedCategories[x];
+
+                    for (let x = 0; x < amountPerCat; x++) {
+                        // Pick a random question
+                        questions.push(helper.getRandomArrayValue(eval(questionArrayName)));
+                        // question.pushOne(helper.getRandomArrayValue(eval(questionArrayName)));
+
+                    }
+                };
+
+                // console.log('Questions to ask: ' + questions);
+
+                if (restValue > 0) {
+                    console.log('Rest value is there so add more questions to the array');
+                    // Pick a random categorie
+                    const randomCategorie = helper.getRandomArrayValue(selectedCategories);
+
+                    for (let x = 0; x < restValue; x++) {
+                        // Pick a random question
+                        questions.push(helper.getRandomArrayValue(eval(randomCategorie)));
+                        // question.pushOne(helper.getRandomArrayValue(eval(randomCategorie)));
+                    }
                 }
-            };
 
-            // console.log('Questions to ask: ' + questions);
+                // console.log('Questions to ask: ' + questions);
+                questions = helper.shuffleArray(questions);
+                question.setQuestionsToAsk(questions);
 
-            if (restValue > 0) {
-                console.log('Rest value is there so add more questions to the array');
-                // Pick a random categorie
-                const randomCategorie = categories[Math.floor(Math.random() * categories.length)];
-                // console.log('random categorie =>', randomCategorie);
+                // console.log('Questions to ask shuffled: ' + questions);
 
-                let questionArrayName = getArrayName(randomCategorie);
+                // Set the audio file and answer in the form
+                let antwoord = questions[statistics.getTotalAnswered];
 
-                for (let x = 0; x < restValue; x++) {
-                    // Pick a random question
-                    questions.push(getRandomCategorieQuestion(eval(questionArrayName)));
-                }
+                fillAnswer(antwoord);
             }
-
-            // console.log('Questions to ask: ' + questions);
-            localStorage.setItem('questionsToAsk', questions);
-            questions = shuffle(questions);
-            // console.log('Questions to ask shuffled: ' + questions);
-
-            // Set the audio file and answer in the form
-            let antwoord = questions[localStorage.getItem('totaalBeantwoord')];
-
-            fillAnswer(antwoord);
-        }
-
-        function shuffle(array) {
-            var currentIndex = array.length, temporaryValue, randomIndex;
-
-            // While there remain elements to shuffle...
-            while (0 !== currentIndex) {
-
-                // Pick a remaining element...
-                randomIndex = Math.floor(Math.random() * currentIndex);
-                currentIndex -= 1;
-
-                // And swap it with the current element.
-                temporaryValue = array[currentIndex];
-                array[currentIndex] = array[randomIndex];
-                array[randomIndex] = temporaryValue;
-            }
-
-            return array;
         }
 
         function fillAnswer(audioInfo) {
             if (audioInfo) {
+                const audioFile = './Audio/' + audioInfo + '.m4a';
+                console.log('Audio bestand: ' + audioFile);
                 let antwoord = audioInfo.split('/')[1];
-                // console.log('antwoord: ' + antwoord);
+                console.log('Het antwoord: ' + antwoord);
+                let categorie = audioInfo.split('/')[0];
+                console.log('De categorie: ' + categorie);
                 document.getElementById('antwoord').value = antwoord;
-                document.getElementById('audioBestand').src = './Audio/' + audioInfo + '.m4a';
+                document.getElementById('categorie').innerHTML = 'De categorie is: ' + categorie;
+                document.getElementById('audioBestand').src = audioFile;
             }
-        }
-
-        function getArrayName(categorieName) {
-            switch (categorieName) {
-                case 'zing':
-                    return 'questionsZing';
-                    break;
-                case 'plank':
-                    return 'questionsPlank';
-                    break;
-                case 'hak':
-                    return 'questionsHak';
-                    break;
-                case 'hakspeciaal':
-                    return 'questionsHakSpeciaal';
-                    break;
-                case 'lucht':
-                    return 'questionsLucht';
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        function getRandomCategorieQuestion(arr) {
-            return arr[Math.floor(Math.random() * arr.length)];
         }
     </script>
 </head>
@@ -344,22 +286,30 @@
                 <div class="form-group">
                     <button class="btn btn-outline-success" type="submit" id="controleren">controleren</button>
                 </div>
-
-
-
-                <div class="form-group">
-                    <div class="alert alert-danger" role="alert" id="result" data-cy="validation-message"></div>
-                </div>
-
-                <div class="form-group">
-                    <div class="result" id="result"></div>
-                </div>
             </form>
             <div class="form-group">
                 <button class="btn btn-outline-success hidden" onclick="location.reload();"
                     id="volgende">volgende</button>
                 <button class="btn btn-outline-success hidden" onclick="location.href='index.html';"
                     id="klaar">klaar!</button>
+            </div>
+
+            <div class="form-group">
+                <p>
+                    <a class="btn btn-primary" data-toggle="collapse" href="#toonCategorie" role="button"
+                        aria-expanded="false" aria-controls="toonCategorie">Toon tip!</a>
+                </p>
+                <div class="row">
+                    <div class="col">
+                        <div class="collapse multi-collapse" id="toonCategorie">
+                            <div class="card card-body" id="categorie"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="alert alert-danger" role="alert" id="result" data-cy="validation-message"></div>
             </div>
         </div>
     </div>

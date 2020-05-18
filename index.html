@@ -10,29 +10,43 @@
     <title>Spelling oefenen</title>
     <meta name="description"
         content="Op spelling oefenen kunnen kinderen de spelling aan de hand van audiobestanden leren schrijven">
+    <!-- <script type="module" src="./built/person.js"></script>
+    <script type="module" src="./built/category.js"></script>
+    <script type="module" src="./built/question.js"></script>
+    <script type="module" src="./built/statistic.js"></script> -->
     <script>
+        // import Person from './built/person';
+        import { Person } from './built/person';
+        import Category from './built/category';
+        import Question from './built/question';
+        import Statistics from './built/statistic';
+    </script>
+    <script>
+        let person = new Person();
+        let category = new Category();
+        let question = new Question();
+        let statistics = new Statistics();
+
         function onInit() {
             // Fill in all the stored values
-            fillFirstName();
+            $('#firstname').val(person.getFirstName());
+
             setCategories();
-            setAmountOfQuestions();
-            setStatistics();
+
+            $("select").val(question.getAmountOfQuestions());
+
+            $('#totaalGoed').html(statistics.getAnsweredCorrectly());
+            $('#totaalFout').html(statistics.getAnsweredWrongly());
 
             // Always reset the total answerd questions
-            localStorage.setItem('totaalBeantwoord', 0);
-            localStorage.setItem('questionsToAsk', '');
+            statistics.resetTotalAnswered();
+            question.resetQuestionsToAsk();
 
             $('#result').hide();
         }
 
-        function fillFirstName() {
-            let firstname = localStorage.getItem('firstname');
-
-            $('#firstname').val(firstname);
-        }
-
         function setCategories() {
-            let selectedCategorieList = localStorage.getItem('categorie');
+            let selectedCategorieList = category.getCategory();
 
             $("input:checkbox").each(function () {
                 if (selectedCategorieList && selectedCategorieList.includes($(this).val())) {
@@ -41,41 +55,28 @@
             });
         }
 
-        function setAmountOfQuestions() {
-            let selectedAmountOfQuestion = localStorage.getItem('amountOfQuestions');
-
-            if (selectedAmountOfQuestion) {
-                $("select").val(selectedAmountOfQuestion);
-            } else {
-                $("select").val("10");
-            }
-        }
-
-        function setStatistics() {
-            $('#totaalGoed').html(localStorage.getItem('totaalGoed'));
-            $('#totaalFout').html(localStorage.getItem('totaalFout'));
-        }
-
         function validateForm() {
-            localStorage.setItem('firstname', $.trim($('#firstname').val()));
-            localStorage.setItem('amountOfQuestions', $('#amountOfQuestions').val());
+            // Save the values
+            person.setFirstName($('#firstname').val());
+            question.setAmountOfQuestions($('#amountOfQuestions').val());
 
-            let category = getCheckedCheckboxesFor('categorie');
+            // Get alle selected categories
+            let categories = getCheckedCheckboxesFor('categorie');
 
-            if (Array.isArray(category) && (category.length === 0)) {
+            // Check if one is selected if not show warning
+            if (Array.isArray(categories) && (categories.length === 0)) {
                 $('#result').html('Je hebt geen categorie geselecteerd');
                 $('#result').show();
                 return false;
+            } else {
+                category.setCategory(categories);
             }
-
-            localStorage.setItem('categorie', category);
         }
 
         function getCheckedCheckboxesFor(checkboxName) {
             var values = [];
 
             let checkboxes = $.each($('input[name="' + checkboxName + '"]:checked'), function () {
-                console.log('push');
                 values.push($(this).val());
             });
 
@@ -103,7 +104,7 @@
                             <div class="col-sm-3">
                                 <input class="form-control form-control-sm" type="text" id="firstname"
                                     data-cy="voornaam" required>
-                                <div class="invalid-feedback">
+                                <div class="invalid-feedback" data-cy="voornaam-validatie">
                                     Geef een naam op alstublief
                                 </div>
                             </div>
@@ -128,38 +129,45 @@
                         <div class="form-group">
                             <label data-cy="categorie">Categorie</label>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="zing" id="categorieZing"
+                                <input class="form-check-input" type="checkbox" value="questionsZing" id="categorieZing"
                                     name="categorie" novalidate>
                                 <label class="form-check-label" for="categorieZing">
                                     Zingwoord
                                 </label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="plank" id="categoriePlank"
-                                    name="categorie">
+                                <input class="form-check-input" type="checkbox" value="questionsPlank"
+                                    id="categoriePlank" name="categorie">
                                 <label class="form-check-label" for="categoriePlank">
                                     Plankwoord
                                 </label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="hak" id="categorieHak"
+                                <input class="form-check-input" type="checkbox" value="questionsHak" id="categorieHak"
                                     name="categorie">
                                 <label class="form-check-label" for="categorieHak">
                                     Hakwoord
                                 </label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="hakspeciaal"
+                                <input class="form-check-input" type="checkbox" value="questionsHakSpeciaal"
                                     id="categorieHakSpeciaal" name="categorie">
                                 <label class="form-check-label" for="categorieHakSpeciaal">
                                     Speciaal hakwoord
                                 </label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="lucht" id="categorieLucht"
-                                    name="categorie">
+                                <input class="form-check-input" type="checkbox" value="questionsLucht"
+                                    id="categorieLucht" name="categorie">
                                 <label class="form-check-label" for="categorieLucht">
                                     Luchtwoord
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="questionEerOorEur"
+                                    id="categorieEerOorEur" name="categorie">
+                                <label class="form-check-label" for="categorieEerOorEur">
+                                    Eer-Oor-Eur
                                 </label>
                             </div>
                         </div>

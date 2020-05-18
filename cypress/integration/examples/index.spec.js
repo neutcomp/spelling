@@ -15,7 +15,7 @@ context('Window', () => {
 
   it('Check validation', () => {
     cy.get('[data-cy=start]').click();
-    cy.get('[data-cy=validation-message]').contains('Je naam is niet ingevuld');
+    cy.get('[data-cy=voornaam-validatie]').contains('Geef een naam op alstublief');
     cy.get('[data-cy=voornaam').type('Bjorn');
     cy.get('[data-cy=start]').click();
     cy.get('[data-cy=validation-message]').contains('Je hebt geen categorie geselecteerd');
