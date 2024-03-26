@@ -10,7 +10,7 @@
         "cypress:open": "cypress open"
     },
     "devDependencies": {
-        "@angular/cli": "^9.1.15",
+        "@angular/cli": "^17.3.2",
         "husky": "^4.2.5",
         "start-server-and-test": "^1.11.0"
     },
